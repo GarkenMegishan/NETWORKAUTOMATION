@@ -1,0 +1,73 @@
+============================================================
+Host     : 192.168.4.205
+Site     : site_40
+Type     : fortinet
+Collected: 2026-04-29 18:02:51.372665
+============================================================
+
+----------------------------------------
+Command: get system status
+----------------------------------------
+Version: FortiGate-VM64-KVM v7.4.11,build2878,260126 (GA.M)
+First GA patch build date: 230509
+Current Security Level: High
+Firmware Signature: certified
+Virus-DB: 1.00000(2018-04-09 18:07)
+Extended DB: 1.00000(2018-04-09 18:07)
+Extreme DB: 1.00000(2018-04-09 18:07)
+AV AI/ML Model: 0.00000(2001-01-01 00:00)
+IPS-DB: 6.00741(2015-12-01 02:30)
+IPS-ETDB: 6.00741(2015-12-01 02:30)
+APP-DB: 6.00741(2015-12-01 02:30)
+Proxy-IPS-DB: 6.00741(2015-12-01 02:30)
+Proxy-IPS-ETDB: 6.00741(2015-12-01 02:30)
+Proxy-APP-DB: 6.00741(2015-12-01 02:30)
+FMWP-DB: 26.00040(2026-04-10 14:33)
+IPS Malicious URL Database: 1.00001(2015-01-01 01:01)
+IoT-Detect: 0.00000(2022-08-17 17:31)
+OT-Detect-DB: 0.00000(2001-01-01 00:00)
+OT-Patch-DB: 0.00000(2001-01-01 00:00)
+OT-Threat-DB: 6.00741(2015-12-01 02:30)
+IPS-Engine: 7.00596(2026-01-05 18:18)
+Serial-Number: FGVM08TM26000410
+License Status: Warning
+License Expiration Date: 2026-06-13
+VM Resources: 2 CPU/8 allowed, 1992 MB RAM
+Log hard disk: Not available
+Hostname: Local-FortiGate
+Private Encryption: Disable
+Operation Mode: NAT
+Current virtual domain: root
+Max number of virtual domains: 10
+Virtual domains status: 1 in NAT mode, 0 in TP mode
+Virtual domain configuration: disable
+FIPS-CC mode: disable
+Current HA mode: standalone
+Branch point: 2878
+Release Version Information: GA
+FortiOS x86-64: Yes
+System time: Wed Apr 29 03:03:02 2026
+Last reboot reason: power cycle
+
+
+----------------------------------------
+Command: get system interface
+----------------------------------------
+== [ port1 ]
+name: port1   mode: static    ip: 10.200.1.1 255.255.255.0   status: up    netbios-forward: disable    type: physical   ring-rx: 0   ring-tx: 0   netflow-sampler: disable    sflow-sampler: disable    src-check: enable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    drop-overlapped-fragment: disable    drop-fragment: disable    mtu-override: disable    
+== [ port2 ]
+name: port2   mode: static    ip: 10.200.2.1 255.255.255.0   status: up    netbios-forward: disable    type: physical   ring-rx: 0   ring-tx: 0   netflow-sampler: disable    sflow-sampler: disable    src-check: enable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    drop-overlapped-fragment: disable    drop-fragment: disable    mtu-override: disable    
+== [ port3 ]
+name: port3   mode: static    ip: 10.0.1.254 255.255.255.0   status: up    netbios-forward: disable    type: physical   ring-rx: 0   ring-tx: 0   netflow-sampler: disable    sflow-sampler: disable    src-check: enable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    drop-overlapped-fragment: disable    drop-fragment: disable    mtu-override: disable    
+== [ port4 ]
+name: port4   mode: static    ip: 192.168.4.205 255.255.255.0   status: up    netbios-forward: disable    type: physical   ring-rx: 0   ring-tx: 0   netflow-sampler: disable    sflow-sampler: disable    src-check: enable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    drop-overlapped-fragment: disable    drop-fragment: disable    mtu-override: disable    
+== [ naf.root ]
+name: naf.root   ip: 0.0.0.0 0.0.0.0   status: up    netbios-forward: disable    type: tunnel   netflow-sampler: disable    sflow-sampler: disable    src-check: disable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    
+== [ l2t.root ]
+name: l2t.root   ip: 0.0.0.0 0.0.0.0   status: up    netbios-forward: disable    type: tunnel   netflow-sampler: disable    sflow-sampler: disable    src-check: enable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    
+== [ ssl.root ]
+name: ssl.root   ip: 0.0.0.0 0.0.0.0   status: up    netbios-forward: disable    type: tunnel   netflow-sampler: disable    sflow-sampler: disable    src-check: enable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    
+== [ fortilink ]
+name: fortilink   mode: static    ip: 10.255.1.1 255.255.255.0   status: up    netbios-forward: disable    type: aggregate   netflow-sampler: disable    sflow-sampler: disable    src-check: enable    explicit-web-proxy: disable    explicit-ftp-proxy: disable    proxy-captive-portal: disable    wccp: disable    drop-overlapped-fragment: disable    drop-fragment: disable    mtu-override: disable    
+
+

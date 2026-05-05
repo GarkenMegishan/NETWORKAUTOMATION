@@ -1,0 +1,3 @@
+Host  : 192.168.4.201
+Time  : 2026-05-05 12:05:24.831139
+Error : Unexpected FortiOS Version encountered.

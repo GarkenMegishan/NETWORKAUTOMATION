@@ -1,0 +1,66 @@
+{
+  "skill_name": "network-automation",
+  "evals": [
+    {
+      "id": 1,
+      "name": "cisco-vlan-and-trunk-add",
+      "prompt": "I need to add VLAN 75 (\"IoT_Sensors\") to two Catalyst 9300 access switches (sw-acc-01 and sw-acc-02, both running IOS-XE 17.6) and make sure it's trunked over Po1 to the core. Give me the config to push and the commands I'll use to verify it landed. Also, what's the safe way to roll back if I lose access?",
+      "expected_output": "A vendor-correct IOS-XE config block adding VLAN 75 with name IoT_Sensors, trunk allowed-vlan modification on Po1, verification commands (show vlan brief, show interfaces po1 trunk), and a rollback recommendation using configure replace or reload-in. Should call out that 'switchport trunk allowed vlan add' is the additive form (vs replacing the list).",
+      "files": [],
+      "assertions": [
+        {"id": "a1", "text": "Output contains 'vlan 75' with the name 'IoT_Sensors'"},
+        {"id": "a2", "text": "Trunk modification uses 'switchport trunk allowed vlan add' (additive) rather than overwriting the allowed list"},
+        {"id": "a3", "text": "Output specifies that the change applies to both sw-acc-01 and sw-acc-02"},
+        {"id": "a4", "text": "Includes verification commands (at least 'show vlan brief' or 'show interfaces ... trunk')"},
+        {"id": "a5", "text": "Includes a rollback recommendation referencing 'configure replace' OR 'reload in' OR 'archive'"},
+        {"id": "a6", "text": "Does not use Junos/Arista/PAN-OS/Fortinet syntax (no 'set vlans', 'configure session', 'config firewall', etc.)"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "bgp-troubleshooting-juniper-vs-cisco",
+      "prompt": "I have an eBGP session that won't establish between an MX480 (Junos 21.4) and an ASR1001-X (IOS-XE 17.9) over a direct point-to-point link. The Junos side shows the session as Active. The Cisco side shows it stuck in Idle/Active. Both sides are configured for the right ASNs (65100 on Junos, 65200 on Cisco). What should I check, in what order, with the exact commands for each side?",
+      "expected_output": "A ranked diagnostic plan with the most likely causes for eBGP-stuck-in-Active (TCP 179 reachability, source-interface mismatch, MD5 password mismatch, MTU/path-mtu-discovery, ACLs/firewall-filters in path, prefix-list/peer policy on either side preventing accept). Vendor-correct commands for each: Junos uses 'show bgp neighbor', 'show route receive-protocol bgp', 'show firewall log', etc.; Cisco uses 'show ip bgp summary', 'show ip bgp neighbors x.x.x.x', 'debug ip bgp x.x.x.x' (with caveats). Should not paraphrase commands across vendors.",
+      "files": [],
+      "assertions": [
+        {"id": "a1", "text": "Provides Junos-specific commands (e.g., 'show bgp neighbor' or 'show bgp summary' or 'show route receive-protocol bgp') for the MX side"},
+        {"id": "a2", "text": "Provides Cisco IOS-XE-specific commands (e.g., 'show ip bgp summary' or 'show ip bgp neighbors') for the ASR side"},
+        {"id": "a3", "text": "Identifies at least 3 distinct likely causes for eBGP stuck in Active/Idle (e.g., TCP-179 reachability, source-interface mismatch, MD5/password mismatch, MTU, ACL/firewall-filter in path)"},
+        {"id": "a4", "text": "Causes are ranked or ordered by likelihood/quick-to-check rather than presented as an unsorted list"},
+        {"id": "a5", "text": "Mentions checking firewall-filter on Junos OR access-list on Cisco for TCP/179 in the path"},
+        {"id": "a6", "text": "Does not confuse Junos and Cisco syntax (no 'show ip bgp' on Junos, no 'show bgp neighbor' alone on Cisco)"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ansible-playbook-ntp-multivendor",
+      "prompt": "Write an Ansible playbook that pushes a standard NTP server list (10.50.0.10 and 10.50.0.11) to a mixed inventory: 12 Cisco IOS-XE switches, 4 Juniper EX switches, and 2 Arista 7050 switches. Use the official collections. Include an inventory snippet showing how the groups are organized, and remind me how to dry-run.",
+      "expected_output": "Three plays (or one playbook with three plays) using cisco.ios.ios_ntp_global (or ios_ntp), junipernetworks.junos.junos_ntp_global, and arista.eos.eos_ntp_global respectively. Inventory snippet showing groups (cisco_ios, juniper_junos, arista_eos) with ansible_network_os set per group. Mention --check --diff for dry-run. Should not push raw 'ntp server' commands when collection-native modules exist.",
+      "files": [],
+      "assertions": [
+        {"id": "a1", "text": "Uses official collections: cisco.ios.* for Cisco, junipernetworks.junos.* for Juniper, arista.eos.* for Arista"},
+        {"id": "a2", "text": "References both NTP servers (10.50.0.10 and 10.50.0.11)"},
+        {"id": "a3", "text": "Includes an inventory snippet (YAML or INI) showing host groups with appropriate ansible_network_os values per vendor"},
+        {"id": "a4", "text": "Mentions '--check' (or '--check --diff') for dry-run before applying"},
+        {"id": "a5", "text": "Prefers resource modules (ios_ntp_global, junos_ntp_global, eos_ntp_global, or equivalent declarative modules) over raw command-push (ios_command/junos_command/eos_command) where possible"},
+        {"id": "a6", "text": "Does not hardcode credentials in the playbook (uses vault, vars, or placeholders)"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "fortigate-policy-runbook",
+      "prompt": "Document the change procedure for adding a new firewall policy on our FortiGate 100F (FortiOS 7.2, no VDOMs) that allows TCP/8443 from the DMZ zone to a single internal server (10.20.30.40). I want a real runbook I can hand to a junior engineer — pre-checks, the exact CLI commands, validation, and rollback. The change is in tonight's window.",
+      "expected_output": "A runbook in markdown with sections: Summary, Prerequisites, Pre-change validation, Change steps (with FortiOS-correct config blocks for address object, custom service for tcp/8443, and a firewall policy referencing both, with proper srcintf/dstintf zones), Post-change validation (using diagnose firewall iprope lookup or test traffic from the DMZ), and Rollback (config replace or deleting the added objects in reverse order). Should respect FortiOS block syntax with config/edit/next/end and IP-mask (not CIDR) notation for the address object.",
+      "files": [],
+      "assertions": [
+        {"id": "a1", "text": "Output is structured as a runbook with at least: Summary/Overview, Pre-change validation, Change steps, Post-change validation, Rollback"},
+        {"id": "a2", "text": "FortiOS config blocks are syntactically complete: 'config firewall address' / 'edit ...' / 'set ...' / 'next' / 'end' with all closing keywords present"},
+        {"id": "a3", "text": "Address object uses 'set subnet 10.20.30.40 255.255.255.255' (IP MASK form), not CIDR notation"},
+        {"id": "a4", "text": "Includes a custom service object for TCP/8443 (e.g., 'config firewall service custom' with 'set tcp-portrange 8443')"},
+        {"id": "a5", "text": "Firewall policy includes srcintf/dstintf (zone or interface), srcaddr, dstaddr, service, action, schedule"},
+        {"id": "a6", "text": "Includes a rollback section with concrete commands (not just 'undo the changes')"},
+        {"id": "a7", "text": "Does not use Cisco/Juniper/PAN-OS syntax (no 'interface GigabitEthernet', no 'set security policies', no 'set rulebase security rules')"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# .gitignore
+
+# Never commit credentials
+.env
+
+# Never commit the venv folder (it's huge and machine-specific)
+venv/
+
+# Python cache files (auto-generated, not needed)
+__pycache__/
+*.pyc

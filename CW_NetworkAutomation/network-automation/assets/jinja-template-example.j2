@@ -1,0 +1,72 @@
+{# Cisco IOS-XE access switch base config — Jinja2 template.
+   Render with scripts/render_template.py against an inventory YAML.
+
+   Expected variables:
+     hostname, mgmt_ip, mgmt_mask, default_gateway,
+     ntp_servers (list), syslog_servers (list),
+     vlans (list of {id, name}),
+     access_ports (list of {interface, vlan, description}),
+     trunk_ports (list of {interface, allowed_vlans, native_vlan, description}),
+     mgmt_user (str)
+#}
+hostname {{ hostname }}
+!
+no ip domain-lookup
+ip domain name corp.example.com
+!
+service timestamps log datetime msec localtime
+service password-encryption
+no service pad
+!
+{% for ntp in ntp_servers %}
+ntp server {{ ntp }}
+{% endfor %}
+!
+{% for sl in syslog_servers %}
+logging host {{ sl }}
+{% endfor %}
+logging buffered 32768
+logging trap informational
+!
+username {{ mgmt_user }} privilege 15 secret <REPLACE-WITH-VAULT-VALUE>
+!
+aaa new-model
+aaa authentication login default local
+aaa authorization exec default local
+!
+interface Vlan1
+ description Management
+ ip address {{ mgmt_ip }} {{ mgmt_mask }}
+ no shutdown
+!
+ip default-gateway {{ default_gateway }}
+!
+{% for v in vlans %}
+vlan {{ v.id }}
+ name {{ v.name }}
+{% endfor %}
+!
+{% for p in access_ports %}
+interface {{ p.interface }}
+ description {{ p.description }}
+ switchport mode access
+ switchport access vlan {{ p.vlan }}
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+!
+{% endfor %}
+{% for t in trunk_ports %}
+interface {{ t.interface }}
+ description {{ t.description }}
+ switchport mode trunk
+ switchport trunk allowed vlan {{ t.allowed_vlans | join(',') }}
+ switchport trunk native vlan {{ t.native_vlan }}
+ no shutdown
+!
+{% endfor %}
+line vty 0 4
+ transport input ssh
+ login authentication default
+!
+end

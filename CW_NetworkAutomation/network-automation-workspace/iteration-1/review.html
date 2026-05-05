@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>network-automation skill — iteration 1 review</title>
+<style>
+  :root {
+    --bg: #fafaf9; --fg: #1c1917; --muted: #57534e;
+    --border: #e7e5e4; --accent: #c2410c;
+    --pass: #166534; --fail: #991b1b;
+    --pass-bg: #dcfce7; --fail-bg: #fee2e2;
+    --code-bg: #f5f5f4;
+  }
+  body { margin: 0; padding: 0; background: var(--bg); color: var(--fg);
+         font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  header { border-bottom: 1px solid var(--border); background: white;
+           padding: 18px 32px; position: sticky; top: 0; z-index: 10; }
+  h1 { margin: 0 0 4px 0; font-size: 19px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  nav { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+  nav button { border: 1px solid var(--border); background: white; padding: 6px 12px;
+               border-radius: 6px; cursor: pointer; font-size: 13px; }
+  nav button.active { background: var(--accent); color: white; border-color: var(--accent); }
+  main { max-width: 1500px; margin: 0 auto; padding: 24px 32px 80px; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+  .eval-header { background: white; border: 1px solid var(--border); border-radius: 8px;
+                 padding: 16px 20px; margin-bottom: 16px; }
+  .eval-name { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .eval-prompt { margin: 8px 0 0; padding: 12px 14px; background: #fefce8;
+                 border-left: 3px solid #ca8a04; border-radius: 4px; font-size: 14px; }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .col { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .col-header { padding: 10px 16px; border-bottom: 1px solid var(--border); font-weight: 600;
+                font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+  .with-skill .col-header { background: #f0fdf4; }
+  .without-skill .col-header { background: #fef2f2; }
+  .grade-pill { font-size: 12px; padding: 2px 8px; border-radius: 12px;
+                background: white; border: 1px solid var(--border); }
+  .response { padding: 16px 20px; max-height: 720px; overflow-y: auto; font-size: 13.5px; }
+  .response h1, .response h2, .response h3 { margin-top: 18px; margin-bottom: 8px; }
+  .response h1 { font-size: 17px; }
+  .response h2 { font-size: 15px; }
+  .response h3 { font-size: 14px; color: var(--muted); }
+  .response pre { background: var(--code-bg); padding: 10px 12px; border-radius: 4px;
+                  overflow-x: auto; font-size: 12.5px; line-height: 1.45; }
+  .response code { background: var(--code-bg); padding: 1px 4px; border-radius: 3px; font-size: 12.5px; }
+  .response pre code { background: transparent; padding: 0; }
+  .response table { border-collapse: collapse; margin: 8px 0; }
+  .response th, .response td { border: 1px solid var(--border); padding: 4px 8px;
+                                text-align: left; font-size: 13px; }
+  .response blockquote { border-left: 3px solid var(--accent); padding: 4px 12px;
+                         color: var(--muted); margin: 8px 0; }
+  .assertions { background: white; border: 1px solid var(--border); border-radius: 8px;
+                padding: 12px 16px; margin-bottom: 16px; }
+  .assertions h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted);
+                   text-transform: uppercase; letter-spacing: 0.5px; }
+  .assertion-grid { display: grid; grid-template-columns: 1fr 90px 90px;
+                    gap: 6px 16px; font-size: 13px; align-items: center; }
+  .assertion-grid .head { font-size: 11px; color: var(--muted); text-transform: uppercase;
+                          letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .pass { color: var(--pass); background: var(--pass-bg); padding: 1px 8px; border-radius: 10px;
+          font-size: 12px; text-align: center; font-weight: 600; }
+  .fail { color: var(--fail); background: var(--fail-bg); padding: 1px 8px; border-radius: 10px;
+          font-size: 12px; text-align: center; font-weight: 600; }
+  .feedback-section { background: white; border: 1px solid var(--border); border-radius: 8px;
+                      padding: 16px 20px; }
+  .feedback-section label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+  textarea { width: 100%; min-height: 80px; border: 1px solid var(--border); border-radius: 6px;
+             padding: 8px 10px; font: inherit; box-sizing: border-box; }
+  .controls { margin-top: 24px; display: flex; justify-content: space-between; gap: 8px; }
+  .controls button { border: 1px solid var(--border); background: white; padding: 8px 16px;
+                     border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .controls button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .summary-pane { background: white; border: 1px solid var(--border); border-radius: 8px;
+                  padding: 20px 24px; margin-bottom: 16px; }
+  .summary-pane table { width: 100%; border-collapse: collapse; }
+  .summary-pane th, .summary-pane td { padding: 8px 12px; border-bottom: 1px solid var(--border);
+                                       text-align: left; font-size: 14px; }
+  .summary-pane th { color: var(--muted); font-weight: 600; font-size: 12px;
+                     text-transform: uppercase; letter-spacing: 0.5px; }
+  .pass-rate-bar { display: inline-block; height: 6px; background: var(--border);
+                   border-radius: 3px; overflow: hidden; vertical-align: middle;
+                   width: 80px; margin-right: 6px; }
+  .pass-rate-bar > div { height: 100%; background: var(--pass); }
+  .baseline-note { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>network-automation skill — iteration 1</h1>
+  <div class="sub">4 test cases &middot; with-skill vs baseline (no skill) &middot; iteration 1</div>
+  <nav id="nav"></nav>
+</header>
+<main id="main"></main>
+
+<!-- Response data embedded as text/plain so backticks/markup pass through verbatim -->
+<script type="text/plain" id="r-1-with"># Adding VLAN 75 to Catalyst 9300 Access Switches
+
+## Configuration
+
+Apply this config to both **sw-acc-01** and **sw-acc-02**:
+
+```
+! Target: sw-acc-01 / sw-acc-02 (Catalyst 9300, IOS-XE 17.6)
+! Change: Add VLAN 75 (IoT_Sensors) and trunk over Po1 to core
+
+vlan 75
+ name IoT_Sensors
+!
+interface Port-channel1
+ switchport trunk allowed vlan add 75
+ description Trunk to Core
+!
+end
+```
+
+**Key points:**
+
+- The `vlan 75` block creates the VLAN and names it. If VLAN 75 already exists, this re-applies the name (idempotent).
+- `switchport trunk allowed vlan add 75` appends VLAN 75 to the existing trunk allowlist on Po1 without removing any existing VLANs. This is safer than `allowed vlan` followed by a fixed list.
+- No interface-level config needed; Po1 is assumed already in `switchport mode trunk` and active.
+
+## Verification Commands
+
+```
+show vlan brief | include 75
+show interface Po1 trunk
+show etherchannel summary | include Po1
+```
+
+## Rollback Procedure
+
+### Pre-change snapshot
+```
+copy running-config flash:pre-change-vlan75-2026-05-05.cfg
+```
+
+### If the change breaks connectivity:
+```
+configure replace flash:pre-change-vlan75-2026-05-05.cfg force
+```
+
+`configure replace` atomically loads the saved config and removes any lines not in it. This reverts both the VLAN and the trunk amendment in one shot.
+
+### Alternative: Dead-man switch (if OOB console unavailable)
+```
+reload in 5
+! Apply changes above, verify, then:
+reload cancel
+```
+
+If connectivity drops, the switch automatically reloads in 5 minutes, reverting to startup-config.
+
+## Trade-offs
+
+- **`switchport trunk allowed vlan add 75`** vs. specifying the full VLAN list: the `add` form is safer for incremental changes and doesn't require knowing the complete current state.
+- **Reload-in vs. config archive**: archive is preferred for non-routing changes (VLANs, trunk ports). Reload-in is simpler but requires a full revert to startup-config. Use reload-in only if archive is unavailable.</script>
+
+<script type="text/plain" id="r-1-without"># VLAN 75 Configuration for Catalyst 9300 Access Switches
+
+## Configuration to Push
+
+### Configuration Block (Apply to sw-acc-01 and sw-acc-02)
+
+```
+! VLAN creation
+vlan 75
+  name IoT_Sensors
+  exit
+
+! Port-Channel interface configuration
+interface Port-channel 1
+  description Trunk to Core
+  switchport mode trunk
+  switchport trunk allowed vlan add 75
+  exit
+```
+
+**Note:** On Catalyst 9300 running IOS-XE 17.6, if Po1 already exists and is trunking, you only need to add VLAN 75 to the allowed list. If Po1 doesn't exist, create it first.
+
+## Verification Commands
+
+```
+show vlan id 75
+show vlan brief | include IoT_Sensors
+show interface port-channel 1
+show etherchannel summary
+show interface port-channel 1 trunk
+show interfaces trunk
+```
+
+## Safe Rollback Procedure
+
+### Method 1: Configuration Rollback (Preferred)
+
+```
+enable
+configure terminal
+  no vlan 75
+  interface Port-channel 1
+    no switchport trunk allowed vlan add 75
+    (or: switchport trunk allowed vlan remove 75)
+  exit
+exit
+write memory
+```
+
+### Method 2: Full Configuration Restore
+
+If you need to revert completely and have a backup:
+
+```
+copy flash:config.backup running-config
+```
+
+### Prevention Best Practices
+
+1. Always have console access available — Don't rely solely on SSH/in-band management when making trunk changes
+2. Backup configuration before changes: `copy running-config flash:config.backup`
+3. Use out-of-band management
+4. Test on one switch first
+5. Prepare rollback commands beforehand
+6. Verify core side acceptance
+
+## Key Reminders for IOS-XE 17.6
+
+- Catalyst 9300 uses modern IOS-XE with standard Cisco syntax
+- The `switchport trunk allowed vlan add` command appends to existing allowed VLANs (doesn't overwrite)
+- Always save configuration: `write memory` or `copy running-config startup-config`</script>
+
+<script type="text/plain" id="r-2-with"># eBGP stuck — MX480 ↔ ASR1001-X
+
+Symptom restated: eBGP between MX480 (Junos 21.4, AS 65100) and ASR1001-X (IOS-XE 17.9, AS 65200) won't establish. Junos shows `Active`; Cisco shows `Idle/Active`. Direct point-to-point link, ASNs configured.
+
+When BGP is stuck in `Active`, that means *one side is trying to open a TCP-179 connection and not getting a response*. Diagnostic order should follow the connection-establishment chain — fastest-to-check failures first.
+
+## Ranked likely causes
+
+1. **TCP/179 not reaching the other side** (ACL on Cisco, firewall-filter on Junos, or the link itself dropping it).
+2. **Source-interface / update-source mismatch** — neighbor IP doesn't match what the other side expects to see as source.
+3. **MD5/authentication mismatch** — one side has a password, the other doesn't, or they differ.
+4. **Hold-down between flaps** — if it just changed, give it 60s before declaring it stuck.
+5. **MTU / TCP-MSS** — less common at this stage.
+6. **BGP-level policy** — only relevant once the session is established.
+
+## Step-by-step diagnostic
+
+### Step 1 — Confirm the session state
+
+**On the MX480 (Junos):**
+```
+show bgp summary
+show bgp neighbor <cisco-peer-ip>
+```
+Look for `State: Active`, `Last Error:`, `Local: <ip>`.
+
+**On the ASR (IOS-XE):**
+```
+show ip bgp summary
+show ip bgp neighbors <junos-peer-ip>
+```
+Look for `BGP state = Active`, `Last reset reason:`, `Local host: <ip>`.
+
+The two `Local:` IPs must be reachable from each other and must match the `neighbor <ip>` configured on the opposite side.
+
+### Step 2 — TCP/179 reachability
+
+**Junos side:**
+```
+ssh
+telnet <cisco-peer-ip> 179
+```
+
+**Cisco side:**
+```
+telnet <junos-peer-ip> 179
+```
+
+If telnet fails, check filters:
+
+**Junos:**
+```
+show configuration interfaces <wan-iface> | display set | match filter
+show firewall counter filter <name>
+```
+
+**Cisco:**
+```
+show running-config interface <wan-iface> | include access-group
+show ip access-lists <ACL-NAME>
+```
+
+### Step 3 — Source-interface alignment
+
+**Junos:**
+```
+show configuration protocols bgp group <group> | display set
+```
+Look for `local-address` or `neighbor <ip>`.
+
+**Cisco:**
+```
+show running-config | section bgp
+```
+Look for `update-source <interface>`.
+
+### Step 4 — Authentication
+
+**Junos:**
+```
+show configuration protocols bgp group <group> neighbor <ip> | display set | match authentication
+```
+
+**Cisco:**
+```
+show running-config | section bgp | include password
+```
+
+### Step 5 — If still stuck, capture the SYN
+
+**Cisco:** `debug ip bgp <peer-ip> events` (disable immediately after with `undebug all`).
+
+**Junos:** Enable `traceoptions` for BGP open + state, commit confirmed 5, read `show log bgp-debug.log`, roll back when done.
+
+## Most-common culprits in this scenario
+
+- ~40%: inbound ACL/filter blocking TCP/179
+- ~25%: source-interface mismatch (loopback vs physical)
+- ~20%: MD5 password typo'd on one side
+- ~10%: ASN config wrong (less likely here)
+- ~5%: physical/MTU issues
+
+Start with the telnet test in Step 2 — it tells you in 5 seconds whether the problem is L3/L4 or further up.</script>
+
+<script type="text/plain" id="r-2-without"># BGP Troubleshooting: MX480 to ASR1001-X
+
+When eBGP gets stuck in Active or Idle/Active, the session is failing to establish a TCP connection or the OPEN message is being rejected. Here's a checklist of things to verify on both sides.
+
+## On the Juniper MX480
+
+```
+show bgp summary
+show bgp neighbor 10.0.0.x
+show route receive-protocol bgp 10.0.0.x
+show route advertising-protocol bgp 10.0.0.x
+show configuration protocols bgp
+```
+
+Look at `Last Error` and `Last State` to understand why it's transitioning out of Active.
+
+Also useful:
+```
+show log messages | match bgp
+monitor traffic interface ge-0/0/0 matching tcp port 179
+```
+
+## On the Cisco ASR1001-X
+
+```
+show ip bgp summary
+show ip bgp neighbors 10.0.0.x
+show ip route 10.0.0.x
+show running-config | section bgp
+debug ip bgp 10.0.0.x
+debug ip tcp transactions
+```
+
+`show ip bgp neighbors` will give you state details, last reset reason, and the configured options.
+
+## Things to check
+
+1. **AS numbers on both sides** — double-check the `peer-as` on Junos matches the local-as on Cisco and vice versa.
+2. **Source/destination IPs** — make sure each side's `neighbor` statement points to the IP that the other side is sourcing from.
+3. **TCP port 179 reachability**:
+   - Juniper: `telnet 10.0.0.x 179`
+   - Cisco: `telnet 10.0.0.x 179`
+   If either fails, an ACL or filter is blocking it.
+4. **Authentication / MD5 password** — if one side has a BGP password and the other doesn't, the session will fail.
+5. **MTU mismatch** — TCP-MSS clamping or path-MTU issue.
+6. **Hold-time / keepalive mismatch**.
+7. **Routing to the peer IP** — verify with `show route` / `show ip route`.
+8. **TTL** — eBGP defaults to TTL=1; if there's any layer-3 hop, configure `multihop`.
+
+## Order of operations
+
+1. Verify physical link and basic IP reachability (ping).
+2. Verify TCP/179 reachability (`telnet x.x.x.x 179`).
+3. Inspect ACLs and firewall filters.
+4. Compare `update-source` (Cisco) and `local-address` (Junos).
+5. Check for password mismatch.
+6. Check AS configurations.
+7. If still stuck, enable debug or monitor traffic.
+
+The Last Error / Last Reset Reason output is usually the most informative single piece of data. Start there.
+
+## Quick sanity check
+
+Does each side ping the other's peer IP? If not, you have an L1/L2/L3 problem. If ping works but `telnet x.x.x.x 179` fails, you have a filter problem. If telnet works but BGP is still stuck, you have a config problem (passwords, source-interface, etc.).</script>
+
+<script type="text/plain" id="r-3-with"># Multi-vendor NTP Ansible playbook
+
+You've got three vendors with three different network OSes, so the cleanest approach is one playbook with three plays — one per OS group — each using the official collection's NTP resource module. This stays idempotent, supports `--check --diff` dry-run, and avoids hand-pushing `ntp server` lines.
+
+## Inventory (`inventory.yml`)
+
+```yaml
+all:
+  vars:
+    ansible_user: "{{ vault_net_user }}"
+    ansible_password: "{{ vault_net_password }}"
+    ansible_connection: ansible.netcommon.network_cli
+  children:
+    cisco_ios:
+      hosts:
+        ios-sw-01: { ansible_host: 10.10.0.11 }
+        ios-sw-02: { ansible_host: 10.10.0.12 }
+        # ... ios-sw-03 through ios-sw-12
+      vars:
+        ansible_network_os: cisco.ios.ios
+
+    juniper_junos:
+      hosts:
+        ex-sw-01: { ansible_host: 10.10.1.11 }
+        ex-sw-02: { ansible_host: 10.10.1.12 }
+        ex-sw-03: { ansible_host: 10.10.1.13 }
+        ex-sw-04: { ansible_host: 10.10.1.14 }
+      vars:
+        ansible_network_os: junipernetworks.junos.junos
+
+    arista_eos:
+      hosts:
+        eos-sw-01: { ansible_host: 10.10.2.11 }
+        eos-sw-02: { ansible_host: 10.10.2.12 }
+      vars:
+        ansible_network_os: arista.eos.eos
+```
+
+Credentials reference an Ansible Vault — define `vault_net_user` / `vault_net_password` in `group_vars/all/vault.yml`. Never commit plaintext credentials.
+
+## Required collections (one-time)
+
+```bash
+ansible-galaxy collection install cisco.ios junipernetworks.junos arista.eos
+```
+
+## Playbook (`push_ntp.yml`)
+
+```yaml
+---
+- name: NTP — Cisco IOS-XE
+  hosts: cisco_ios
+  gather_facts: false
+  vars:
+    ntp_servers:
+      - 10.50.0.10
+      - 10.50.0.11
+  tasks:
+    - name: Configure NTP servers (Cisco)
+      cisco.ios.ios_ntp_global:
+        config:
+          servers:
+            - server: "{{ item }}"
+              version: 4
+        state: merged
+      loop: "{{ ntp_servers }}"
+
+- name: NTP — Juniper Junos (EX)
+  hosts: juniper_junos
+  gather_facts: false
+  vars:
+    ntp_servers:
+      - 10.50.0.10
+      - 10.50.0.11
+  tasks:
+    - name: Configure NTP servers (Junos)
+      junipernetworks.junos.junos_ntp_global:
+        config:
+          servers:
+            - server: "{{ item }}"
+        state: merged
+      loop: "{{ ntp_servers }}"
+
+- name: NTP — Arista EOS
+  hosts: arista_eos
+  gather_facts: false
+  vars:
+    ntp_servers:
+      - 10.50.0.10
+      - 10.50.0.11
+  tasks:
+    - name: Configure NTP servers (Arista)
+      arista.eos.eos_ntp_global:
+        config:
+          servers:
+            - server: "{{ item }}"
+        state: merged
+      loop: "{{ ntp_servers }}"
+```
+
+`state: merged` is the right default — adds NTP servers without removing existing config. Use `state: replaced` if you want to enforce *exactly* this list.
+
+## Dry-run first
+
+```bash
+ansible-playbook -i inventory.yml push_ntp.yml --check --diff
+```
+
+The `--diff` flag shows the exact lines that would change on each device. If the diff is empty, the change is already in place — that's the idempotency you want.
+
+## Apply
+
+```bash
+ansible-playbook -i inventory.yml push_ntp.yml
+```
+
+## Notes / trade-offs
+
+- **`ios_ntp_global` vs older `ios_ntp`**: the `_global` resource module is the modern (5.0.0+ collection) declarative form.
+- **Why not raw `ios_command` to push `ntp server` lines?** Resource modules detect drift and reconcile state. Raw command pushes don't.
+- **For larger fleets**, use a NetBox dynamic inventory (`nb_inventory`) rather than a static YAML.</script>
+
+<script type="text/plain" id="r-3-without"># Multi-vendor NTP Push Playbook
+
+This playbook pushes NTP server configuration to a mixed inventory of Cisco IOS-XE, Juniper EX, and Arista 7050 switches.
+
+## Inventory
+
+```yaml
+all:
+  children:
+    cisco:
+      hosts:
+        ios-01:
+        # ... through ios-12
+      vars:
+        ansible_network_os: ios
+        ansible_connection: network_cli
+    juniper:
+      hosts:
+        ex-01:
+        ex-02:
+        ex-03:
+        ex-04:
+      vars:
+        ansible_network_os: junos
+        ansible_connection: netconf
+    arista:
+      hosts:
+        eos-01:
+        eos-02:
+      vars:
+        ansible_network_os: eos
+        ansible_connection: network_cli
+```
+
+You'll want to add `ansible_host` for each device with the actual IP.
+
+## Playbook
+
+```yaml
+---
+- name: Push NTP config to Cisco IOS-XE
+  hosts: cisco
+  gather_facts: no
+  vars:
+    ntp_servers:
+      - 10.50.0.10
+      - 10.50.0.11
+  tasks:
+    - name: Configure NTP servers
+      ios_config:
+        lines:
+          - "ntp server {{ item }}"
+        save_when: modified
+      loop: "{{ ntp_servers }}"
+
+- name: Push NTP config to Juniper EX
+  hosts: juniper
+  gather_facts: no
+  vars:
+    ntp_servers:
+      - 10.50.0.10
+      - 10.50.0.11
+  tasks:
+    - name: Configure NTP servers
+      junos_config:
+        lines:
+          - "set system ntp server {{ item }}"
+        comment: "Add NTP server"
+      loop: "{{ ntp_servers }}"
+
+- name: Push NTP config to Arista EOS
+  hosts: arista
+  gather_facts: no
+  vars:
+    ntp_servers:
+      - 10.50.0.10
+      - 10.50.0.11
+  tasks:
+    - name: Configure NTP servers
+      eos_config:
+        lines:
+          - "ntp server {{ item }}"
+        save_when: modified
+      loop: "{{ ntp_servers }}"
+```
+
+## Dry-run
+
+```
+ansible-playbook -i inventory.yml ntp_push.yml --check --diff
+```
+
+## Required collections
+
+```
+ansible-galaxy collection install cisco.ios
+ansible-galaxy collection install junipernetworks.junos
+ansible-galaxy collection install arista.eos
+```
+
+## Notes
+
+- The `ios_config`, `junos_config`, and `eos_config` modules are part of the official collections.
+- For SSH credentials, use `ansible-vault` for the password.
+- The `save_when: modified` argument writes config to startup only if changes were made.</script>
+
+<script type="text/plain" id="r-4-with"># Network Change Runbook: Allow TCP/8443 from DMZ to internal app server
+
+| Field | Value |
+|---|---|
+| Change ID | CHG-NET-001 |
+| Author | <your name> |
+| Date | 2026-05-05 |
+| Maintenance window | Tonight, 22:00–23:00 local |
+| Risk | Low |
+| Devices affected | FortiGate 100F (FortiOS 7.2, no VDOMs) |
+
+## Summary
+
+Add a new firewall policy permitting TCP/8443 from the DMZ zone to a single internal server `10.20.30.40` for application access. The change is additive only — no existing policy is modified or deleted, so blast radius is limited to traffic that would now match this rule.
+
+## Prerequisites
+
+- [ ] Out-of-band / console access verified
+- [ ] Pre-change config backup downloaded
+- [ ] Maintenance window approved
+- [ ] `dmz` and `internal` zones already exist on this FortiGate
+
+## Pre-change validation
+
+```
+execute backup config tftp pre-change-CHG-NET-001.conf <tftp-server-ip>
+show system zone
+show firewall policy | grep edit
+show firewall address | grep app-server
+show firewall service custom | grep 8443
+```
+
+## Change steps
+
+### Step 1: Create the address object
+
+```
+config firewall address
+    edit "obj-app-server-8443"
+        set type ipmask
+        set subnet 10.20.30.40 255.255.255.255
+        set comment "App server reachable from DMZ on TCP/8443 — CHG-NET-001"
+    next
+end
+```
+
+Note: FortiOS uses `IP MASK` form (space-separated), not CIDR.
+
+### Step 2: Create the custom service for TCP/8443
+
+```
+config firewall service custom
+    edit "svc-tcp-8443"
+        set tcp-portrange 8443
+        set comment "Custom TCP/8443 — CHG-NET-001"
+    next
+end
+```
+
+### Step 3: Create the firewall policy
+
+```
+config firewall policy
+    edit 0
+        set name "ALLOW-DMZ-TO-APPSRV-8443"
+        set srcintf "dmz"
+        set dstintf "internal"
+        set srcaddr "all"
+        set dstaddr "obj-app-server-8443"
+        set action accept
+        set schedule "always"
+        set service "svc-tcp-8443"
+        set logtraffic all
+        set comments "CHG-NET-001 — allow TCP/8443 from DMZ to app server"
+    next
+end
+```
+
+`edit 0` lets FortiOS auto-assign a policy ID. Note the assigned ID for rollback.
+
+## Post-change validation
+
+### Test 1: Policy lookup
+
+```
+diagnose firewall iprope lookup <some-dmz-source-ip> 49152 10.20.30.40 8443 6
+```
+
+Should reference the new policy ID with `accept`.
+
+### Test 2: Real traffic
+
+```
+# From a host on DMZ:
+nc -zv 10.20.30.40 8443
+```
+
+### Test 3: Confirm logging
+
+```
+execute log filter category 0
+execute log filter field policyid <new-policy-id>
+execute log display
+```
+
+## Rollback
+
+Delete in reverse order (policy → service → address):
+
+```
+config firewall policy
+    delete <new-policy-id>
+end
+
+config firewall service custom
+    delete svc-tcp-8443
+end
+
+config firewall address
+    delete obj-app-server-8443
+end
+```
+
+Reverse order matters: you can't delete an address object that's still referenced by a policy.
+
+## Communications
+
+- **Window start (22:00)**: "Beginning CHG-NET-001 on FGT100F."
+- **On completion**: "CHG-NET-001 complete. TCP/8443 from DMZ to 10.20.30.40 now permitted."
+- **On rollback**: "CHG-NET-001 rolled back due to <reason>."
+
+## Post-change
+
+- [ ] No need to `execute save` — FortiOS persists config automatically when commands return cleanly.
+- [ ] Push updated config snapshot to backup repo / Git.
+- [ ] Update internal IPAM/firewall-rule docs.
+- [ ] Close ticket with as-built notes including the assigned policy ID.</script>
+
+<script type="text/plain" id="r-4-without"># FortiGate 100F — Add Policy: DMZ to Internal Server (TCP/8443)
+
+## Overview
+
+This runbook covers adding a new firewall policy on a FortiGate 100F running FortiOS 7.2 (no VDOMs) to allow TCP/8443 traffic from the DMZ zone to the internal server at 10.20.30.40.
+
+## Pre-Change Checks
+
+1. **Backup current configuration**:
+   - Via GUI: System → Settings → Configuration → Backup
+   - Or CLI: `execute backup config tftp <filename> <server-ip>`
+2. **Verify zone setup**: `show system zone`
+3. **Note existing policy IDs**: `show firewall policy`
+4. **Confirm appropriate change window** is open.
+
+## Change Steps
+
+### Step 1: Define the address object
+
+```
+config firewall address
+    edit "Internal-App-Server"
+        set subnet 10.20.30.40/32
+    next
+end
+```
+
+### Step 2: Define a custom service for TCP/8443
+
+```
+config firewall service custom
+    edit "TCP-8443"
+        set protocol TCP
+        set tcp-portrange 8443
+    next
+end
+```
+
+### Step 3: Add the firewall policy
+
+```
+config firewall policy
+    edit 0
+        set name "DMZ-to-AppServer-8443"
+        set srcintf "dmz"
+        set dstintf "internal"
+        set srcaddr "all"
+        set dstaddr "Internal-App-Server"
+        set action accept
+        set schedule "always"
+        set service "TCP-8443"
+        set logtraffic all
+    next
+end
+```
+
+The `edit 0` lets FortiOS auto-assign a policy ID.
+
+## Validation
+
+### Verify the policy was created
+
+```
+show firewall policy
+```
+
+### Test connectivity from a DMZ host
+
+```
+telnet 10.20.30.40 8443
+```
+
+### Check logs
+
+Forward Traffic logs in the GUI (Log & Report → Forward Traffic) should show entries.
+
+## Rollback
+
+### Option A: Disable the policy
+
+```
+config firewall policy
+    edit <policy-id>
+        set status disable
+    next
+end
+```
+
+### Option B: Delete the policy and objects
+
+```
+config firewall policy
+    delete <policy-id>
+end
+config firewall service custom
+    delete TCP-8443
+end
+config firewall address
+    delete Internal-App-Server
+end
+```
+
+### Option C: Restore from backup
+
+```
+execute restore config tftp <filename> <server-ip>
+```
+
+This will reboot the firewall.
+
+## Post-Change
+
+1. Save: `execute save`
+2. Update documentation
+3. Notify stakeholders
+
+## Notes for the Junior Engineer
+
+- Run commands one at a time and verify each step before proceeding.
+- The `0` in `edit 0` lets FortiOS pick an unused ID automatically.
+- Console access is your friend if SSH stops working.</script>
+
+<script>
+"use strict";
+
+const data = {
+  evals: [
+    {
+      id: 1,
+      name: "cisco-vlan-and-trunk-add",
+      prompt: "I need to add VLAN 75 (\"IoT_Sensors\") to two Catalyst 9300 access switches (sw-acc-01 and sw-acc-02, both running IOS-XE 17.6) and make sure it's trunked over Po1 to the core. Give me the config to push and the commands I'll use to verify it landed. Also, what's the safe way to roll back if I lose access?",
+      assertions: [
+        {text: "Output contains 'vlan 75' with the name 'IoT_Sensors'", with: true, without: true},
+        {text: "Trunk modification uses 'switchport trunk allowed vlan add' (additive)", with: true, without: true},
+        {text: "Change applies to both sw-acc-01 and sw-acc-02", with: true, without: true},
+        {text: "Includes verification commands ('show vlan brief' or 'show interfaces ... trunk')", with: true, without: true},
+        {text: "Rollback uses 'configure replace' OR 'reload in' OR 'archive'", with: true, without: false, withoutNote: "Suggests 'no vlan 75' / config.backup restore — neither matches the safer documented mechanisms"},
+        {text: "No Junos/Arista/PAN-OS/Fortinet syntax", with: true, without: true}
+      ]
+    },
+    {
+      id: 2,
+      name: "bgp-troubleshooting-juniper-vs-cisco",
+      prompt: "I have an eBGP session that won't establish between an MX480 (Junos 21.4) and an ASR1001-X (IOS-XE 17.9) over a direct point-to-point link. The Junos side shows the session as Active. The Cisco side shows it stuck in Idle/Active. Both sides are configured for the right ASNs (65100 on Junos, 65200 on Cisco). What should I check, in what order, with the exact commands for each side?",
+      assertions: [
+        {text: "Junos-specific commands ('show bgp neighbor' or 'show bgp summary')", with: true, without: true},
+        {text: "Cisco-specific commands ('show ip bgp summary' or 'show ip bgp neighbors')", with: true, without: true},
+        {text: "At least 3 distinct likely causes", with: true, without: true},
+        {text: "Causes ranked / ordered by likelihood", with: true, without: true, withoutNote: "Has 'Order of operations' but ranking is implicit, not explicit probability"},
+        {text: "Mentions firewall-filter on Junos OR access-list on Cisco for TCP/179", with: true, without: true},
+        {text: "Does not confuse Junos and Cisco syntax", with: true, without: true}
+      ]
+    },
+    {
+      id: 3,
+      name: "ansible-playbook-ntp-multivendor",
+      prompt: "Write an Ansible playbook that pushes a standard NTP server list (10.50.0.10 and 10.50.0.11) to a mixed inventory: 12 Cisco IOS-XE switches, 4 Juniper EX switches, and 2 Arista 7050 switches. Use the official collections. Include an inventory snippet showing how the groups are organized, and remind me how to dry-run.",
+      assertions: [
+        {text: "Uses official collections (cisco.ios.* / junipernetworks.junos.* / arista.eos.*)", with: true, without: true, withoutNote: "Uses ios_config/junos_config/eos_config — generic config-pusher modules within those collections"},
+        {text: "References both NTP servers (10.50.0.10 and 10.50.0.11)", with: true, without: true},
+        {text: "Inventory snippet with ansible_network_os per vendor group", with: true, without: true},
+        {text: "Mentions '--check' or '--check --diff' for dry-run", with: true, without: true},
+        {text: "Prefers resource modules over raw command-push", with: true, without: false, withoutNote: "Pushes raw 'ntp server X' lines via *_config — works, but isn't declarative/idempotent"},
+        {text: "Does not hardcode credentials", with: true, without: true}
+      ]
+    },
+    {
+      id: 4,
+      name: "fortigate-policy-runbook",
+      prompt: "Document the change procedure for adding a new firewall policy on our FortiGate 100F (FortiOS 7.2, no VDOMs) that allows TCP/8443 from the DMZ zone to a single internal server (10.20.30.40). I want a real runbook I can hand to a junior engineer — pre-checks, the exact CLI commands, validation, and rollback. The change is in tonight's window.",
+      assertions: [
+        {text: "Structured as runbook (Summary, Pre-change, Change steps, Post-change, Rollback)", with: true, without: true},
+        {text: "FortiOS config blocks syntactically complete (config / edit / set / next / end)", with: true, without: true},
+        {text: "Address object uses IP-MASK form (10.20.30.40 255.255.255.255), not CIDR", with: true, without: false, withoutNote: "Uses 'set subnet 10.20.30.40/32' — CIDR notation, which fails on FortiOS"},
+        {text: "Includes custom service object for TCP/8443", with: true, without: true},
+        {text: "Firewall policy includes srcintf/dstintf, srcaddr, dstaddr, service, action, schedule", with: true, without: true},
+        {text: "Includes rollback with concrete commands", with: true, without: true},
+        {text: "No Cisco/Juniper/PAN-OS syntax", with: true, without: true}
+      ]
+    }
+  ]
+};
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function inlineMd(s) {
+  s = escapeHtml(s);
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+  return s;
+}
+
+function renderMd(md) {
+  const lines = md.split("\n");
+  const html = [];
+  let inCode = false;
+  let codeBuf = [];
+  let inList = false;
+  let inOrderedList = false;
+  let inTable = false;
+  let tableHeaderDone = false;
+
+  function closeList() {
+    if (inList) { html.push("</ul>"); inList = false; }
+    if (inOrderedList) { html.push("</ol>"); inOrderedList = false; }
+  }
+  function closeTable() {
+    if (inTable) { html.push("</tbody></table>"); inTable = false; tableHeaderDone = false; }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.startsWith("```")) {
+      if (inCode) {
+        html.push("<pre><code>" + escapeHtml(codeBuf.join("\n")) + "</code></pre>");
+        codeBuf = []; inCode = false;
+      } else {
+        closeList(); closeTable(); inCode = true;
+      }
+      continue;
+    }
+    if (inCode) { codeBuf.push(line); continue; }
+
+    if (line.startsWith("# ")) { closeList(); closeTable(); html.push("<h1>" + inlineMd(line.slice(2)) + "</h1>"); continue; }
+    if (line.startsWith("## ")) { closeList(); closeTable(); html.push("<h2>" + inlineMd(line.slice(3)) + "</h2>"); continue; }
+    if (line.startsWith("### ")) { closeList(); closeTable(); html.push("<h3>" + inlineMd(line.slice(4)) + "</h3>"); continue; }
+    if (line.startsWith("> ")) { closeList(); closeTable(); html.push("<blockquote>" + inlineMd(line.slice(2)) + "</blockquote>"); continue; }
+
+    const ulMatch = line.match(/^[-*]\s+(.*)$/);
+    const olMatch = line.match(/^(\d+)\.\s+(.*)$/);
+
+    if (ulMatch) {
+      closeTable();
+      if (inOrderedList) { html.push("</ol>"); inOrderedList = false; }
+      if (!inList) { html.push("<ul>"); inList = true; }
+      html.push("<li>" + inlineMd(ulMatch[1]) + "</li>");
+      continue;
+    }
+    if (olMatch) {
+      closeTable();
+      if (inList) { html.push("</ul>"); inList = false; }
+      if (!inOrderedList) { html.push("<ol>"); inOrderedList = true; }
+      html.push("<li>" + inlineMd(olMatch[2]) + "</li>");
+      continue;
+    }
+
+    if (line.startsWith("|")) {
+      closeList();
+      if (!inTable) { html.push("<table><tbody>"); inTable = true; tableHeaderDone = false; }
+      const next = (lines[i+1] || "");
+      if (!tableHeaderDone && /^\|[\s|:-]+\|/.test(next)) {
+        const cells = line.split("|").slice(1, -1).map(c => "<th>" + inlineMd(c.trim()) + "</th>").join("");
+        html.push("<tr>" + cells + "</tr>");
+        i++; tableHeaderDone = true; continue;
+      }
+      const cells = line.split("|").slice(1, -1).map(c => "<td>" + inlineMd(c.trim()) + "</td>").join("");
+      html.push("<tr>" + cells + "</tr>");
+      continue;
+    }
+
+    closeList(); closeTable();
+    if (line.trim() === "") continue;
+    html.push("<p>" + inlineMd(line) + "</p>");
+  }
+  closeList(); closeTable();
+  if (inCode) html.push("<pre><code>" + escapeHtml(codeBuf.join("\n")) + "</code></pre>");
+  return html.join("\n");
+}
+
+function getResponse(id, cond) {
+  const el = document.getElementById("r-" + id + "-" + cond);
+  return el ? el.textContent : "";
+}
+
+function passRate(arr, key) {
+  const total = arr.length;
+  const passed = arr.filter(a => a[key]).length;
+  return { passed, total, pct: Math.round((passed / total) * 100) };
+}
+
+function render() {
+  const nav = document.getElementById("nav");
+  const main = document.getElementById("main");
+
+  // Nav
+  nav.innerHTML = '<button data-id="summary" class="active">Summary</button>' +
+    data.evals.map(e => '<button data-id="' + e.id + '">Eval ' + e.id + ': ' + e.name + '</button>').join("");
+
+  // Summary pane
+  let totalWith = 0, totalWithout = 0, totalAssertions = 0;
+  let summary = '<section id="pane-summary" class="pane active"><div class="summary-pane">';
+  summary += '<h2 style="margin-top:0">Benchmark — iteration 1</h2>';
+  summary += '<table><thead><tr><th>Eval</th><th>With skill</th><th>Without skill</th><th>&Delta;</th></tr></thead><tbody>';
+  data.evals.forEach(e => {
+    const w = passRate(e.assertions, "with");
+    const wo = passRate(e.assertions, "without");
+    totalWith += w.passed; totalWithout += wo.passed; totalAssertions += w.total;
+    summary += '<tr><td>' + e.id + '. ' + e.name + '</td>' +
+      '<td><span class="pass-rate-bar"><div style="width:' + w.pct + '%"></div></span>' +
+      w.passed + '/' + w.total + ' (' + w.pct + '%)</td>' +
+      '<td><span class="pass-rate-bar"><div style="width:' + wo.pct + '%"></div></span>' +
+      wo.passed + '/' + wo.total + ' (' + wo.pct + '%)</td>' +
+      '<td>+' + (w.passed - wo.passed) + '</td></tr>';
+  });
+  const tw = Math.round((totalWith / totalAssertions) * 100);
+  const two = Math.round((totalWithout / totalAssertions) * 100);
+  summary += '<tr style="font-weight:600"><td>TOTAL</td>' +
+    '<td><span class="pass-rate-bar"><div style="width:' + tw + '%"></div></span>' +
+    totalWith + '/' + totalAssertions + ' (' + tw + '%)</td>' +
+    '<td><span class="pass-rate-bar"><div style="width:' + two + '%"></div></span>' +
+    totalWithout + '/' + totalAssertions + ' (' + two + '%)</td>' +
+    '<td>+' + (totalWith - totalWithout) + '</td></tr>';
+  summary += '</tbody></table>';
+  summary += '<h3 style="margin-top:24px">Where the skill made a difference</h3><ul>';
+  summary += '<li><strong>Eval 1 (Cisco rollback)</strong> &mdash; baseline suggested <code>no vlan 75</code> / config-restore; with-skill produced <code>configure replace</code> and <code>reload in</code>, the safer mechanisms documented in <code>references/cisco.md</code>.</li>';
+  summary += '<li><strong>Eval 3 (Ansible NTP)</strong> &mdash; baseline pushed raw <code>ntp server</code> lines via <code>ios_config</code>; with-skill used <code>cisco.ios.ios_ntp_global</code> declarative resource module per the skill\'s "idempotence beats cleverness" principle.</li>';
+  summary += '<li><strong>Eval 4 (FortiGate)</strong> &mdash; baseline used <code>10.20.30.40/32</code> CIDR notation in <code>set subnet</code>, which is invalid on FortiOS; with-skill used <code>10.20.30.40 255.255.255.255</code> IP-MASK form per the gotcha in <code>references/fortinet.md</code>.</li>';
+  summary += '<li><strong>Eval 2 (BGP)</strong> &mdash; both versions answered well; the skill version added an explicit probability ranking, but the baseline got the substance right.</li>';
+  summary += '</ul></div></section>';
+
+  // Eval panes
+  let panes = "";
+  data.evals.forEach(e => {
+    const w = passRate(e.assertions, "with");
+    const wo = passRate(e.assertions, "without");
+    let pane = '<section id="pane-' + e.id + '" class="pane"><div class="eval-header">';
+    pane += '<div class="eval-name">Eval ' + e.id + ' &mdash; ' + e.name + '</div>';
+    pane += '<div class="eval-prompt">' + escapeHtml(e.prompt) + '</div></div>';
+
+    pane += '<div class="columns">';
+    pane += '<div class="col with-skill"><div class="col-header"><span>With skill</span>' +
+            '<span class="grade-pill">' + w.passed + '/' + w.total + ' pass</span></div>' +
+            '<div class="response">' + renderMd(getResponse(e.id, "with")) + '</div></div>';
+    pane += '<div class="col without-skill"><div class="col-header"><span>Baseline (no skill)</span>' +
+            '<span class="grade-pill">' + wo.passed + '/' + wo.total + ' pass</span></div>' +
+            '<div class="response">' + renderMd(getResponse(e.id, "without")) + '</div></div>';
+    pane += '</div>';
+
+    pane += '<div class="assertions"><h3>Assertions</h3><div class="assertion-grid">';
+    pane += '<div class="head">Check</div><div class="head">With skill</div><div class="head">Without</div>';
+    e.assertions.forEach(a => {
+      pane += '<div>' + escapeHtml(a.text);
+      if (a.withoutNote) pane += '<div class="baseline-note">baseline: ' + escapeHtml(a.withoutNote) + '</div>';
+      pane += '</div>';
+      pane += '<div class="' + (a.with ? "pass" : "fail") + '">' + (a.with ? "PASS" : "FAIL") + '</div>';
+      pane += '<div class="' + (a.without ? "pass" : "fail") + '">' + (a.without ? "PASS" : "FAIL") + '</div>';
+    });
+    pane += '</div></div>';
+
+    pane += '<div class="feedback-section">' +
+            '<label for="fb-' + e.id + '">Your feedback on the with-skill output (anything to fix, generalize, remove?)</label>' +
+            '<textarea id="fb-' + e.id + '" data-eval="' + e.id + '" placeholder="Type here. Auto-saves as you type."></textarea>' +
+            '</div></section>';
+    panes += pane;
+  });
+
+  main.innerHTML = summary + panes +
+    '<div class="controls">' +
+    '<button onclick="prevPane()">&larr; Previous</button>' +
+    '<button onclick="nextPane()">Next &rarr;</button>' +
+    '<button class="primary" onclick="exportFeedback()">Submit all reviews</button>' +
+    '</div>';
+
+  // Wire nav
+  document.querySelectorAll("nav button").forEach(b => {
+    b.addEventListener("click", () => showPane(b.dataset.id));
+  });
+
+  // Wire feedback persistence
+  document.querySelectorAll("textarea[data-eval]").forEach(t => {
+    const key = "fb-net-auto-iter1-" + t.dataset.eval;
+    t.value = localStorage.getItem(key) || "";
+    t.addEventListener("input", () => localStorage.setItem(key, t.value));
+  });
+}
+
+function showPane(id) {
+  document.querySelectorAll(".pane").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  const pane = document.getElementById("pane-" + id);
+  if (pane) pane.classList.add("active");
+  const btn = document.querySelector('nav button[data-id="' + id + '"]');
+  if (btn) btn.classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+const order = ["summary", "1", "2", "3", "4"];
+function currentPaneIndex() {
+  const active = document.querySelector(".pane.active");
+  if (!active) return 0;
+  return order.indexOf(active.id.replace("pane-", ""));
+}
+function nextPane() { const i = currentPaneIndex(); if (i < order.length - 1) showPane(order[i + 1]); }
+function prevPane() { const i = currentPaneIndex(); if (i > 0) showPane(order[i - 1]); }
+
+function exportFeedback() {
+  const reviews = [];
+  document.querySelectorAll("textarea[data-eval]").forEach(t => {
+    reviews.push({
+      run_id: "eval-" + t.dataset.eval + "-with_skill",
+      feedback: t.value,
+      timestamp: new Date().toISOString()
+    });
+  });
+  const out = { reviews, status: "complete", iteration: 1 };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "feedback.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  alert("feedback.json downloaded. Save it next to this HTML (or drop it back in the chat) so I can read it for iteration 2.");
+}
+
+document.addEventListener("DOMContentLoaded", render);
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") nextPane();
+  if (e.key === "ArrowLeft") prevPane();
+});
+</script>
+</body>
+</html>

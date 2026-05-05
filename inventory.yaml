@@ -1,0 +1,56 @@
+# ══════════════════════════════════════════════════════════════
+# inventory.yaml — Network Device Inventory
+# ══════════════════════════════════════════════════════════════
+#
+# STRUCTURE EXPLAINED:
+#   host         → IP address of the device
+#   port         → SSH port (22 is standard)
+#   vendor       → fortinet or cisco
+#   device_type  → Netmiko connection driver to use
+#                  fortinet       = FortiGate SSH
+#                  cisco_ios      = Cisco IOS (older/classic)
+#                  cisco_ios_xe   = Cisco IOS-XE (newer, ASR/ISR/Cat9k)
+#                  *** Update cisco entries to cisco_ios_xe if you know
+#                      a device runs IOS-XE. Default is cisco_ios. ***
+#   site         → Human label — edit these to match your real sites
+#   notes        → Any extra info about the device
+#
+# HOW TO EDIT:
+#   - Indentation uses SPACES not tabs (YAML is strict about this)
+#   - Each device starts with a dash (-)
+#   - Keep the same structure for every entry
+#
+# SECURITY:
+#   - NO passwords in this file
+#   - Passwords live in .env only
+# ══════════════════════════════════════════════════════════════
+
+fortigate_devices:
+
+  - host: 192.168.4.200
+    port: 22
+    vendor: fortinet
+    device_type: fortinet
+    site: Fortimanager
+    notes: "Fortimanager"
+
+  - host: 192.168.4.201
+    port: 22
+    vendor: fortinet
+    device_type: fortinet
+    site: Fortianalyzer
+    notes: "Fortianalyzer"
+
+  - host: 192.168.4.205
+    port: 22
+    vendor: fortinet
+    device_type: fortinet
+    site: Fortigate_Local
+    notes: "Fortigate"
+
+  - host: 192.168.4.207
+    port: 22
+    vendor: fortinet
+    device_type: fortinet
+    site: Fortigate_Remote
+    notes: "Fortigate"

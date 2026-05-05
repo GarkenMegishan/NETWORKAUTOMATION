@@ -1,0 +1,73 @@
+---
+# Ansible playbook scaffold for multi-device network changes.
+#
+# Inventory pattern (group_vars/access_switches.yml example below):
+#   ansible_network_os: cisco.ios.ios
+#   ansible_connection: ansible.netcommon.network_cli
+#   ansible_user: "{{ vault_net_user }}"
+#   ansible_password: "{{ vault_net_password }}"
+#
+# Run:
+#   ansible-playbook -i inventory.yml site.yml --check --diff   # dry-run
+#   ansible-playbook -i inventory.yml site.yml                   # apply
+#
+# Always start with --check --diff. The diff shows exactly what would change.
+
+- name: <descriptive change name>
+  hosts: <inventory group>
+  gather_facts: false
+  vars:
+    # Override per-host in host_vars or group_vars; never hardcode credentials.
+    new_vlan_id: 50
+    new_vlan_name: Guest_WiFi
+
+  tasks:
+
+    - name: Snapshot running config before change
+      cisco.ios.ios_command:
+        commands:
+          - show running-config
+      register: pre_change_config
+      changed_when: false
+
+    - name: Save pre-change config to controller-side file
+      ansible.builtin.copy:
+        content: "{{ pre_change_config.stdout[0] }}"
+        dest: "./backups/{{ inventory_hostname }}-pre-change-{{ ansible_date_time.iso8601 }}.cfg"
+      delegate_to: localhost
+
+    - name: Configure VLAN
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: "{{ new_vlan_id }}"
+            name: "{{ new_vlan_name }}"
+            state: active
+        state: merged
+
+    - name: Add VLAN to access ports
+      cisco.ios.ios_l2_interfaces:
+        config:
+          - name: "{{ item }}"
+            mode: access
+            access:
+              vlan: "{{ new_vlan_id }}"
+        state: merged
+      loop: "{{ access_ports | default([]) }}"
+
+    - name: Verify VLAN is configured
+      cisco.ios.ios_command:
+        commands:
+          - "show vlan brief | include {{ new_vlan_id }}"
+      register: verification
+
+    - name: Assert VLAN visible
+      ansible.builtin.assert:
+        that:
+          - new_vlan_id | string in verification.stdout[0]
+        fail_msg: "VLAN {{ new_vlan_id }} not found post-change"
+
+    - name: Save running to startup
+      cisco.ios.ios_command:
+        commands:
+          - write memory
+      changed_when: true
